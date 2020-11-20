@@ -90,7 +90,7 @@ int		get_next_line(char **line)
 
 	if (line == NULL)
 		return (-1);
-	else if (s == NULL)
+	else if (s == NULL)		//Si s es null o bien es la primera vez que se llama a la función o ya se ha terminado la lectura del archivo
 	{
 		control = read(3, buffer, 42);
 		if (control < 0)
@@ -103,7 +103,8 @@ int		get_next_line(char **line)
 		buffer[control] = '\0';
 		s = ft_strdup(buffer);
 	}
-
+	//Se sigue leyendo y concatenando hasta que se encuentre un salto de línea
+	// o el read() no devuelva 42 (lo que significa que se ha llegado al final del archivo)
 	while (!ft_find_newline(s) && control == 42)
 	{
 		control = read(3, buffer, 42);
@@ -117,9 +118,10 @@ int		get_next_line(char **line)
 		s = ft_strjoin(s, buffer);
 		free(aux);
 	}
-
+	//Se avanza en el string hasta llegar hasta un salto de línea o al final del string
 	while (s[i] && s[i] != '\n')
 		i++;
+	//Si hay un salto de línea se devuelve desde el principio hasta el salto y se guarda lo demás
 	if (s[i] == '\n')
 	{
 		*line = ft_substr(s, i);
