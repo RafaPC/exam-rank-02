@@ -1,7 +1,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 
-static int ft_strlen(char *s)
+int		ft_strlen(char *s)
 {
 	int i = 0;
 	while (s[i])
@@ -9,7 +9,7 @@ static int ft_strlen(char *s)
 	return (i);
 }
 
-static int ft_count(long long n, int base_len)
+int		ft_digits_base(long long n, int base_len)
 {
 	int i = 1;
 	while (n >= base_len)
@@ -20,34 +20,40 @@ static int ft_count(long long n, int base_len)
 	return (i);
 }
 
-static void	ft_putnbr(long long n, int base_len, char *base)
+void	ft_putnbr_base(long long n, int base_len, char *base)
 {
 	if (n >= base_len)
-		ft_putnbr(n / base_len, base_len, base);
+		ft_putnbr_base(n / base_len, base_len, base);
 	write(1, &base[n % base_len], 1);
 }
 
-int	ft_printf(const char *format, ...)
+int		ft_printf(const char *format, ...)
 {
 	va_list ap;
-	int res = 0, len = 0, prec = 0, flag_prec = 0, neg = 0, zeros = 0, spaces = 0, width = 0, base_len = 0;
-	long num = 0;
-	char *base, *str, *s;
 	va_start(ap, format);
-	str = (char *)format;
+	int		char_count = 0;
+	char	*str = (char*)format;
+	long long num;
+
+	int width, spaces, zeros, flag_prec, prec, neg, base_len, len;
+	char *base, *str;
+
 	while (*str)
 	{
-		if (*str == '%')
+		if (*str != '%')
+			char_count += write(1, str, 1);
+		else
 		{
 			str++;
-			len = 0, prec = 0, flag_prec = 0, neg = 0, zeros = 0, spaces = 0, width = 0, base_len = 0;
-			//Coger anchura
+			width = 0, spaces = 0, zeros = 0, flag_prec = 0, prec = 0, neg = 0, base_len = 0, num = 0, len = 0;
+
+			//Anchura
 			while (*str >= '0' && *str <= '9')
 			{
 				width = width * 10 + *str - '0';
 				str++;
 			}
-			//Coger precisión
+			//Precisión
 			if (*str == '.')
 			{
 				str++;
@@ -58,61 +64,59 @@ int	ft_printf(const char *format, ...)
 					str++;
 				}
 			}
-			//Leer especificador
+
 			if (*str == 's')
 			{
-				s = va_arg(ap, char *);
-				if (!s)
-					s = "(null)";
-				len = ft_strlen(s);
+				str = va_arg(ap, char*);
+				if (str == NULL)
+					str = "(null)";
+				len = ft_strlen(str);
 			}
 			else if (*str == 'd')
 			{
 				num = va_arg(ap, int);
-				base_len = 10;
-				base = "0123456789";
-				//Checkear si el número es negativo
 				if (num < 0)
 				{
 					neg = 1;
 					num = -num;
 				}
-				len = ft_count(num, base_len) + neg;
+				base_len = 10;
+				base = "0123456789";
+				len = ft_digits_base(num, base_len) + neg;
 			}
 			else if (*str == 'x')
 			{
 				num = va_arg(ap, unsigned);
 				base_len = 16;
 				base = "0123456789abcdef";
-				len = ft_count(num, base_len);
+				len = ft_digits_base(num, base_len);
 			}
 
-			if (*str != 's' && flag_prec == 1 && prec > len)
+			if (*str != 's' && flag_prec && prec > (len - neg))
 				zeros = prec - len + neg;
-			else if (*str == 's' && flag_prec == 1 && prec < len)
+			else if (*str == 's' && flag_prec && prec < len)
 				len = prec;
-			else if (flag_prec == 1 && prec == 0 && (num == 0 || *str == 's'))
+			else if (flag_prec && prec == 0 && (*str == 's' || num == 0))
 				len = 0;
-			spaces = width - len - zeros;
-			//Imprimir espacios
+
+			spaces = width - zeros - len;
+
 			while (spaces-- > 0)
-				res += write(1, " ", 1);
+				char_count += write(1, " ", 1);
 			if (neg)
 				write(1, "-", 1);
-			//Imprimir ceros
 			while (zeros-- > 0)
-				res += write(1, "0", 1);
-			//Imprimir string
+				char_count += write(1, "0", 1);
+			
 			if (*str == 's')
-				write(1, s, len);
-			else if (len > 0)		//Imprimir número
-				ft_putnbr(num, base_len, base);
-			res += len;
+				write(1, str, len);
+			else if (len > 0)
+				ft_putnbr_base(num, base_len, base);
+			
+			char_count += len;
 		}
-		else
-			res += write(1, str, 1);
 		str++;
 	}
 	va_end(ap);
-	return (res);
+	return (char_count);
 }
