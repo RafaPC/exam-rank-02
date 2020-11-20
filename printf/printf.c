@@ -64,7 +64,7 @@ int		ft_printf(const char *format, ...)
 					str++;
 				}
 			}
-
+			//Checkeo specifier
 			if (*str == 's')
 			{
 				str = va_arg(ap, char*);
@@ -91,7 +91,7 @@ int		ft_printf(const char *format, ...)
 				base = "0123456789abcdef";
 				len = ft_digits_base(num, base_len);
 			}
-
+			//Comprobaciones varias (la ultima "creo" que en parte redundante)
 			if (*str != 's' && flag_prec && prec > (len - neg))
 				zeros = prec - len + neg;
 			else if (*str == 's' && flag_prec && prec < len)
@@ -99,8 +99,10 @@ int		ft_printf(const char *format, ...)
 			else if (flag_prec && prec == 0 && (*str == 's' || num == 0))
 				len = 0;
 
+			//Cálculo del número de espacios en base a la anchura y esas cosillas
 			spaces = width - zeros - len;
 
+			//Imprimición
 			while (spaces-- > 0)
 				char_count += write(1, " ", 1);
 			if (neg)
@@ -113,6 +115,7 @@ int		ft_printf(const char *format, ...)
 			else if (len > 0)
 				ft_putnbr_base(num, base_len, base);
 			
+			//Importante sumar esto
 			char_count += len;
 		}
 		str++;
