@@ -36,7 +36,7 @@ int		ft_printf(const char *format, ...)
 	long long num;
 
 	int width, spaces, zeros, flag_prec, prec, neg, base_len, len;
-	char *base, *str;
+	char *base, *s;
 
 	while (*str)
 	{
@@ -67,10 +67,10 @@ int		ft_printf(const char *format, ...)
 			//Checkeo specifier
 			if (*str == 's')
 			{
-				str = va_arg(ap, char*);
-				if (str == NULL)
-					str = "(null)";
-				len = ft_strlen(str);
+				s = va_arg(ap, char*);
+				if (s == NULL)
+					s = "(null)";
+				len = ft_strlen(s);
 			}
 			else if (*str == 'd')
 			{
@@ -111,7 +111,7 @@ int		ft_printf(const char *format, ...)
 				char_count += write(1, "0", 1);
 			
 			if (*str == 's')
-				write(1, str, len);
+				write(1, s, len);
 			else if (len > 0)
 				ft_putnbr_base(num, base_len, base);
 			
